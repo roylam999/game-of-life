@@ -44,17 +44,30 @@ function init() {
 function draw() {
     background(255);
     generate();
-    for (let i = 0; i < columns; i++) {
-      for (let j = 0; j < rows; j++) {
-        if (currentBoard[i][j] == 1) {
+    for (let x = 0; x < columns; x++) {
+      for (let y = 0; y < rows; y++) {
+        if (currentBoard[x][y] == 1) {
           fill(boxColor);
         } else {
-          fill(255);
+        let bgColor = calcBgColor(x, y);
+          fill(bgColor);
         }
         stroke(strokeColor);
-        rect(i * unitLength, j * unitLength, unitLength, unitLength);
+        rect(x * unitLength, y * unitLength, unitLength, unitLength);
       }
     }
+  }
+
+  function calcBgColor(x,y){
+    // return floor(random()*256)
+    let t = Date.now() /1000;
+    
+    let r = floor((x/columns) *256);
+    let g = round((cos(t) / 2 +0.5) * 256)
+    let b = floor((y/rows) *256);
+
+    // b = (round((sin(t) / 2 +0.5) * 256))%100
+    return color(r,g,b)
   }
 
 function generate() {
@@ -63,15 +76,17 @@ function generate() {
       for (let y = 0; y < rows; y++) {
         // Count all living members in the Moore neighborhood(8 boxes surrounding)
         let neighbors = 0;
-        for (let i of [-1, 0, 1]) {
-          for (let j of [-1, 0, 1]) {
-            if (i == 0 && j == 0) {
+        for (let dx of [-1, 0, 1]) {
+          for (let dy of [-1, 0, 1]) {
+            if (dx == 0 && dy == 0) {
               // the cell itself is not its own neighbor
               continue;
             }
             // The modulo operator is crucial for wrapping on the edge
-            neighbors +=
-              currentBoard[(x + i + columns) % columns][(y + j + rows) % rows];
+            let peerX = (x + dx + columns) % columns;
+            let peerY = (y + dy + rows) % rows;
+            neighbors += currentBoard[peerX][peerY]
+            //   currentBoard[(x + dx + columns) % columns][(y + dy + rows) % rows];
           }
         }
   
@@ -140,3 +155,7 @@ function mouseReleased() {
 document.querySelector("#reset-game").addEventListener("click", function () {
     init();
   });
+
+//   document.querySelector("#pause-game").addEventListener("click", function () {
+//     init();
+//   });
