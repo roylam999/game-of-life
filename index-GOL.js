@@ -5,6 +5,7 @@ let columns; /* To be determined by window width */
 let rows; /* To be determined by window height */
 let currentBoard;
 let nextBoard;
+let isPaused = false;
 
 function setup() {
     /* Set the canvas to be under the element #canvas*/
@@ -52,7 +53,7 @@ function draw() {
         let bgColor = calcBgColor(x, y);
           fill(bgColor);
         }
-        stroke(strokeColor);
+        stroke(getStrokeColor(x, y));
         rect(x * unitLength, y * unitLength, unitLength, unitLength);
       }
     }
@@ -70,6 +71,13 @@ function draw() {
     return color(r,g,b)
   }
 
+function getStrokeColor() {
+
+  let luminance = (red(boxColor) + green(boxColor) + blue(boxColor)) / 3;
+  let strokeColor = luminance > 128 ? color(0) : color(255);
+
+  return strokeColor;
+}
 function generate() {
     //Loop over every single box on the board
     for (let x = 0; x < columns; x++) {
@@ -156,6 +164,14 @@ document.querySelector("#reset-game").addEventListener("click", function () {
     init();
   });
 
-//   document.querySelector("#pause-game").addEventListener("click", function () {
-//     init();
-//   });
+  document.querySelector("#pause-game").addEventListener("click", function () {
+    if (isPaused) {
+      loop(); // Resume the game
+      isPaused = false;
+      document.querySelector("#pause-game").textContent = "Pause Game";
+    } else {
+      noLoop(); // Pause the game
+      isPaused = true;
+      document.querySelector("#pause-game").textContent = "Resume Game";
+    }
+  });

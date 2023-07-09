@@ -6,13 +6,13 @@
     padding: 5px
 }
 
-#restart-game{
+/* #continue-game{
     background-color: #f2074e;
     color: whitesmoke;
     border-radius: 4px;
     border: none;
     padding: 5px
-}
+} */
 
 #pause-game{
     background-color: #f4c700;
