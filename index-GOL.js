@@ -6,6 +6,14 @@ let rows; /* To be determined by window height */
 let currentBoard;
 let nextBoard;
 let isPaused = false;
+let speedSlider; 
+let currentWidth, currentHeight;
+let song;
+
+
+function preload() {
+  song = loadSound("loverse.mp3");
+}
 
 function setup() {
     /* Set the canvas to be under the element #canvas*/
@@ -15,6 +23,12 @@ function setup() {
     /*Calculate the number of columns and rows */
     columns = floor(width / unitLength);
     rows = floor(height / unitLength);
+
+    resizeCanvas(width, height - 100);
+    resizeGrid();
+
+    currentWidth = windowWidth;
+    currentHeight = windowHeight - 100;
   
     /*Making both currentBoard and nextBoard 2-dimensional matrix that has (columns * rows) boxes. */
     currentBoard = [];
@@ -41,25 +55,78 @@ function init() {
     }
   }
 
+function randomizeBoard() {
+  for (let x = 0; x < columns; x++) {
+    for (let y = 0; y < rows; y++) {
+      currentBoard[x][y] = Math.random() > 0.5 ? 1 : 0; // Randomly set cell state
+    }
+  }
+}
+function windowResized() {
+  // Check if the new dimensions are different from the current dimensions
+  if (windowWidth !== currentWidth || (windowHeight - 100) !== currentHeight) {
+    // Update the current dimensions
+    currentWidth = windowWidth;
+    currentHeight = windowHeight - 100;
+
+    // Adjust the canvas size and resize the grid
+    resizeCanvas(currentWidth, currentHeight);
+    resizeGrid();
+  }
+}
+
+function resizeGrid() {
+  // Adjust the number of columns and rows based on the screen size
+  columns = floor(width / unitLength);
+  rows = floor(height / unitLength);
+
+  // Reinitialize the currentBoard and nextBoard arrays
+  currentBoard = [];
+  nextBoard = [];
+  for (let i = 0; i < columns; i++) {
+    currentBoard[i] = [];
+    nextBoard[i] = [];
+  }
+
+  // Reset the game and redraw the grid
+  init();
+}
 
 function draw() {
-    background(255);
+    // background(red(boxColor), green(boxColor), blue(boxColor));
+    // clear()
     generate();
+    strokeWeight(0.3);
     for (let x = 0; x < columns; x++) {
       for (let y = 0; y < rows; y++) {
         if (currentBoard[x][y] == 1) {
-          fill(boxColor);
+          // fill(red(boxColor), green(boxColor), blue(boxColor));
+          fill('#ff000055')
+          stroke(getStrokeColor(x, y));
+          rect(x * unitLength, y * unitLength, unitLength, unitLength);
         } else {
-        let bgColor = calcBgColor(x, y);
-          fill(bgColor);
+        // let bgColor = calcBgColor(x, y);
+          fill('#00000005');
+          stroke(getStrokeColor(x, y));
+          rect(x * unitLength, y * unitLength, unitLength, unitLength);
         }
-        stroke(getStrokeColor(x, y));
-        rect(x * unitLength, y * unitLength, unitLength, unitLength);
+       
       }
+    }
+
+    for(let i=0;i<1;i++){
+      fill('white');
+      stroke('white');
+      ellipseMode(CENTER);
+      strokeWeight(0.3);
+      let x = Math.random() * columns * unitLength
+      let y = Math.random() * rows * unitLength
+      ellipse(x, y, 2, 2);
+      ellipse(x, y, 2, 2);
     }
   }
 
-  function calcBgColor(x,y){
+  function getStrokeColor(x,y){
     // return floor(random()*256)
     let t = Date.now() /1000;
     
@@ -71,7 +138,7 @@ function draw() {
     return color(r,g,b)
   }
 
-function getStrokeColor() {
+function calcBgColor() {
 
   let luminance = (red(boxColor) + green(boxColor) + blue(boxColor)) / 3;
   let strokeColor = luminance > 128 ? color(0) : color(255);
@@ -118,13 +185,12 @@ function generate() {
     // Swap the nextBoard to be the current Board
     [currentBoard, nextBoard] = [nextBoard, currentBoard];
   }
-  let speedSlider; // Declare the speed slider variable
 
 
   
 function updateFramerate() {
-    const newFramerate = parseInt(speedSlider.value); // Get the value from the speed slider
-    frameRate(newFramerate); // Set the new framerate
+    const newFramerate = parseInt(speedSlider.value); 
+    frameRate(newFramerate); 
   }
   
   /**
@@ -143,35 +209,49 @@ function mouseDragged() {
     fill(boxColor);
     stroke(strokeColor);
     rect(x * unitLength, y * unitLength, unitLength, unitLength);
+    song.play();
   }
   
-  /**
-   * When mouse is pressed
-   */
+
 function mousePressed() {
     noLoop();
     mouseDragged();
-  }
+}
+
+function mouseReleased() {
+  loop();
+}
   
   /**
    * When mouse is released
    */
-function mouseReleased() {
-    loop();
-  }
 
-document.querySelector("#reset-game").addEventListener("click", function () {
+  document.querySelector("#reset-game").addEventListener("click", function () {
     init();
+    song.stop(); // Stop the song
+    song.play();
+    loop(); // Resume the game
+    isPaused = false;
+    document.querySelector("#pause-game").textContent = "Pause Game";
   });
 
   document.querySelector("#pause-game").addEventListener("click", function () {
     if (isPaused) {
+      song.play();
       loop(); // Resume the game
       isPaused = false;
       document.querySelector("#pause-game").textContent = "Pause Game";
     } else {
+      song.pause();
       noLoop(); // Pause the game
       isPaused = true;
       document.querySelector("#pause-game").textContent = "Resume Game";
     }
   });
+
+  document.querySelector("#randomize-button").addEventListener("click", function () {
+    randomizeBoard();
+    isPaused = false;
+    document.querySelector("#pause-game").textContent = "Pause Game";
+  });
+
