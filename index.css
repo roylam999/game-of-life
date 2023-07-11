@@ -175,6 +175,10 @@ span{
   .grid-item {
     position: relative;
   }
+
+  .grid-item:hover {
+    cursor: pointer;
+  }
   
   .img-fluid {
     width: 100%;
